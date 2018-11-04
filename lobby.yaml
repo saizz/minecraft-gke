@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: lobby-spigot
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: lobby-spigot
+    spec:
+      containers:
+      - name: lobby-spigot
+        image: itzg/minecraft-server
+        env:
+          - name: EULA
+            value: "TRUE"
+          - name: TYPE
+            value: "SPIGOT"
+        ports:
+        - containerPort: 25565
+        volumeMounts:
+        - name: data
+          mountPath: /data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: lobby
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: lobby-spigot-service
+  labels:
+    run: lobby-spigot
+spec:
+  selector:
+    app: lobby-spigot
+  type: NodePort
+  ports:
+   - protocol: TCP
+     port: 25565
