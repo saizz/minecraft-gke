@@ -2,7 +2,7 @@ core=1
 mem=8192
 data_disk_type=pd-standard
 #data_disk_type=pd-ssd
-data_size=10
+data_size=20
 gcloud beta compute --project=tora470-demo instances create-with-container mc-bench \
   --zone=asia-northeast1-b --machine-type=custom-${core}-${mem}-ext --subnet=default --network-tier=PREMIUM \
   --metadata=google-logging-enabled=true --maintenance-policy=MIGRATE \
