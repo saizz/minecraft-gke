@@ -1,0 +1,15 @@
+core=1
+mem=8192
+data_disk_type=pd-standard
+#data_disk_type=pd-ssd
+data_size=10
+gcloud beta compute --project=tora470-demo instances create-with-container mc-bench \
+  --zone=asia-northeast1-b --machine-type=custom-${core}-${mem}-ext --subnet=default --network-tier=PREMIUM \
+  --metadata=google-logging-enabled=true --maintenance-policy=MIGRATE \
+  --service-account=592565049795-compute@developer.gserviceaccount.com --scopes=https://www.googleapis.com/auth/devstorage.read_only,https://www.googleapis.com/auth/logging.write,https://www.googleapis.com/auth/monitoring.write,https://www.googleapis.com/auth/servicecontrol,https://www.googleapis.com/auth/service.management.readonly,https://www.googleapis.com/auth/trace.append \
+  --min-cpu-platform=Intel\ Skylake --tags=minecraft --image=cos-stable-70-11021-67-0 --image-project=cos-cloud \
+  --boot-disk-size=10GB --boot-disk-type=pd-standard --boot-disk-device-name=mc-bench \
+  --create-disk=mode=rw,auto-delete=yes,size=${data_size},type=projects/tora470-demo/zones/us-east1-b/diskTypes/${data_disk_type},name=mc-bench-data \
+  --container-image=itzg/minecraft-server --container-restart-policy=always --container-arg=--noconsole \
+  --container-env=EULA=true,TYPE=SPIGOT,SPIGOT_DOWNLOAD_URL=https://storage.googleapis.com/saizo-spigot-plugins/spigot_server.jar,MODS=https://storage.googleapis.com/saizo-spigot-plugins/benchme.jar,MODE=creative,LEVEL_TYPE=FLAT,FORCE_GAMEMODE=true,PVP=false,SEED=gcpug-shonan,OPS=demil_tasse \
+  --labels=container-vm=cos-stable-70-11021-67-0
