@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: bungeecord-deployment
+spec:
+  selector:
+    matchLabels:
+      app: bungeecord
+  serviceName: "bungeecord"
+  template:
+    metadata:
+      labels:
+        app: bungeecord
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: bungeecord
+        image: itzg/bungeecord
+        command: ["/bin/bash", "/bungeecord-config/start.sh"]
+        ports:
+        - containerPort: 25577
+        volumeMounts:
+        - name: server
+          mountPath: /server
+        - name: bungeecord-config
+          mountPath: /bungeecord-config
+      volumes:
+      - name: bungeecord-config
+        configMap:
+          name: bungeecord-config
+  volumeClaimTemplates:
+  - metadata:
+      name: server
+    spec:
+      accessModes: [ "ReadWriteOnce"]
+      storageClassName: "minecraft-data"
+      resources:
+        requests:
+          storage: 200Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bungeecord-service
+  labels:
+    app: bungeecord
+spec:
+  selector:
+    app: bungeecord
+  type: LoadBalancer
+  ports:
+   - protocol: TCP
+     port: 25565
+     targetPort: 25577

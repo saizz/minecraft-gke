@@ -1,0 +1,90 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: peace-spigot-deployment
+spec:
+  selector:
+    matchLabels:
+      app: peace-spigot
+  serviceName: "peace-spigot"
+  template:
+    metadata:
+      labels:
+        app: peace-spigot
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: peace-spigot
+        image: itzg/minecraft-server
+        command: ["/bin/bash", "/spigot-config/start.sh"]
+        env:
+          - name: EULA
+            value: "TRUE"
+          - name: TYPE
+            value: "SPIGOT"
+          - name: VERSION
+            value: 1.13.2
+          #- name: BUILD_FROM_SOURCE
+          #  value: "TRUE"
+          - name: SPIGOT_DOWNLOAD_URL
+            value: "https://storage.googleapis.com/saizo-spigot-plugins/spigot_server.jar"
+          - name: MODS
+            value: "https://storage.googleapis.com/saizo-spigot-plugins/benchme.jar"
+          - name: ONLINE_MODE
+            value: "FALSE"
+          - name: MAX_TICK_TIME
+            value: "-1"
+          - name: WORLD
+            value: "https://storage.googleapis.com/saizo-spigot-plugins/laputa_bals.zip"
+          - name: DIFFICULTY
+            value: "peaceful"
+          - name: MODE
+            value: "adventure"
+          - name: FORCE_GAMEMODE
+            value: "TRUE"
+          - name: PVP
+            value: "FALSE"
+        livenessProbe:
+          exec:
+            command:
+              - mcstatus
+              - localhost
+              - ping
+          initialDelaySeconds: 800
+          periodSeconds: 10
+        ports:
+        - containerPort: 25565
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: spigot-config
+          mountPath: /spigot-config
+      volumes:
+      - name: spigot-config
+        configMap:
+          name: spigot-config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce"]
+      storageClassName: "minecraft-data"
+      resources:
+        requests:
+          storage: 200Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: peace-spigot-service
+  labels:
+    app: peace-spigot
+spec:
+  selector:
+    app: peace-spigot
+  type: ClusterIP
+  #type: NodePort
+  ports:
+   - protocol: TCP
+     port: 25567
+     targetPort: 25565

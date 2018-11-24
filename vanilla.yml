@@ -1,0 +1,88 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: vanilla-spigot-deployment
+spec:
+  selector:
+    matchLabels:
+      app: vanilla-spigot
+  serviceName: "vanilla-spigot"
+  template:
+    metadata:
+      labels:
+        app: vanilla-spigot
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: vanilla-spigot
+        image: itzg/minecraft-server
+        command: ["/bin/bash", "/spigot-config/start.sh"]
+        env:
+          - name: EULA
+            value: "TRUE"
+          - name: TYPE
+            value: "SPIGOT"
+          - name: VERSION
+            value: 1.13.2
+          #- name: BUILD_FROM_SOURCE
+          #  value: "TRUE"
+          - name: SPIGOT_DOWNLOAD_URL
+            value: "https://storage.googleapis.com/saizo-spigot-plugins/spigot_server.jar"
+          - name: MODS
+            value: "https://storage.googleapis.com/saizo-spigot-plugins/benchme.jar"
+          - name: ONLINE_MODE
+            value: "FALSE"
+          - name: MAX_TICK_TIME
+            value: "-1"
+          - name: MODE
+            value: "survival"
+          - name: FORCE_GAMEMODE
+            value: "TRUE"
+          - name: PVP
+            value: "FALSE"
+          - name: LEVEL_TYPE
+            value: "DEFAULT"
+        livenessProbe:
+          exec:
+            command:
+              - mcstatus
+              - localhost
+              - ping
+          initialDelaySeconds: 800
+          periodSeconds: 10
+        ports:
+        - containerPort: 25565
+        volumeMounts:
+        - name: data
+          mountPath: /data
+        - name: spigot-config
+          mountPath: /spigot-config
+      volumes:
+      - name: spigot-config
+        configMap:
+          name: spigot-config
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce"]
+      storageClassName: "minecraft-data"
+      resources:
+        requests:
+          storage: 200Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vanilla-spigot-service
+  labels:
+    app: vanilla-spigot
+spec:
+  selector:
+    app: vanilla-spigot
+  type: ClusterIP
+  #type: NodePort
+  ports:
+   - protocol: TCP
+     port: 25568
+     targetPort: 25565
