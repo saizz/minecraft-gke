@@ -28,8 +28,6 @@ spec:
           #  value: "TRUE"
           - name: SPIGOT_DOWNLOAD_URL
             value: "https://storage.googleapis.com/saizo-spigot-plugins/spigot_server.jar"
-          - name: MODS
-            value: "https://storage.googleapis.com/saizo-spigot-plugins/benchme.jar"
           - name: ONLINE_MODE
             value: "FALSE"
           - name: MAX_TICK_TIME
@@ -69,7 +67,7 @@ spec:
       storageClassName: "minecraft-data"
       resources:
         requests:
-          storage: 200Gi
+          storage: 10Gi
 ---
 apiVersion: v1
 kind: Service
