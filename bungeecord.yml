@@ -1,12 +1,12 @@
 apiVersion: apps/v1
-kind: StatefulSet
+kind: Deployment
 metadata:
   name: bungeecord-deployment
 spec:
+  replicas: 3
   selector:
     matchLabels:
       app: bungeecord
-  serviceName: "bungeecord"
   template:
     metadata:
       labels:
@@ -20,23 +20,12 @@ spec:
         ports:
         - containerPort: 25577
         volumeMounts:
-        - name: server
-          mountPath: /server
         - name: bungeecord-config
           mountPath: /bungeecord-config
       volumes:
       - name: bungeecord-config
         configMap:
           name: bungeecord-config
-  volumeClaimTemplates:
-  - metadata:
-      name: server
-    spec:
-      accessModes: [ "ReadWriteOnce"]
-      storageClassName: "minecraft-data"
-      resources:
-        requests:
-          storage: 10Gi
 ---
 apiVersion: v1
 kind: Service
@@ -52,3 +41,4 @@ spec:
    - protocol: TCP
      port: 25565
      targetPort: 25577
+  sessionAffinity: ClientIP

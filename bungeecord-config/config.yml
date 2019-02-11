@@ -16,7 +16,8 @@ listeners:
   host: 0.0.0.0:25577
   max_players: 10
   tab_size: 60
-  force_default_server: false
+  default_server: lobby
+  force_default_server: true
 connection_throttle: 4000
 groups:
   md_5:
